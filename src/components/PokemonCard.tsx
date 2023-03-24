@@ -6,9 +6,11 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import React from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {SimplePokemon} from '../interfaces/pokemonInterfaces';
 import {FadeInImage} from '../hooks/FadeInImage';
+import ImageColors from 'react-native-image-colors';
+import {useNavigation} from '@react-navigation/native';
 
 const windowWith = Dimensions.get('window').width;
 
@@ -17,9 +19,43 @@ interface Props {
 }
 
 const PokemonCard = ({pokemon}: Props) => {
+  const [bgColor, setBgColor] = useState('grey');
+  const isMounted = useRef(true);
+  const navigation = useNavigation();
+
+  useEffect(() => {
+    ImageColors.getColors(pokemon.picture, {fallback: 'grey'}).then(colors => {
+      if (!isMounted.current) return;
+
+      switch (colors.platform) {
+        case 'android':
+          setBgColor(colors.dominant || 'grey');
+          break;
+        case 'ios':
+          setBgColor(colors.background || 'grey');
+      }
+    });
+
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
+
   return (
-    <TouchableOpacity activeOpacity={0.9}>
-      <View style={{...styles.cardContainer, width: windowWith * 0.4}}>
+    <TouchableOpacity
+      activeOpacity={0.9}
+      onPress={() =>
+        navigation.navigate(
+          'PokemonScreen' as never,
+          {simplePokemon: pokemon, color: bgColor} as never,
+        )
+      }>
+      <View
+        style={{
+          ...styles.cardContainer,
+          width: windowWith * 0.4,
+          backgroundColor: bgColor,
+        }}>
         <View>
           <Text style={styles.name}>
             {pokemon.name}
@@ -43,7 +79,7 @@ export default PokemonCard;
 const styles = StyleSheet.create({
   cardContainer: {
     marginHorizontal: 10,
-    backgroundColor: 'red',
+    // backgroundColor: 'grey',
     height: 120,
     width: 160,
     marginBottom: 25,
@@ -85,6 +121,6 @@ const styles = StyleSheet.create({
     bottom: 0,
     right: 0,
     overflow: 'hidden',
-    opacity: 0.5
-  }
+    opacity: 0.5,
+  },
 });
