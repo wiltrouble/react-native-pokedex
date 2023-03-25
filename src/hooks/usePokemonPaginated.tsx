@@ -19,8 +19,6 @@ export const usePokemonPaginated = () => {
   }
 
   const mapPokemonList = (pokemonList: Result[]) => {
-    pokemonList.forEach(poke => console.log(poke.url)
-    )
     const newPokemonList: SimplePokemon[] = pokemonList.map(({name, url}) => {
       const urlParts = url.split('/');
       const id = urlParts[urlParts.length - 2 ];
